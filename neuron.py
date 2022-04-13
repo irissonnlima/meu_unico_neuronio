@@ -11,9 +11,10 @@ def __signal__(x):
     
     
 class neuron:
-    def __init__(self, number_of_elements:int):
+    def __init__(self, number_of_elements:int, activation_function:any):
         self.number_of_elements = number_of_elements
         self.weight             = np.zeros(number_of_elements)
+        self.phi                = activation_function
 
     def weight_atribute(self, weight_array:np.array):
         for i, w in enumerate(weight_array):
@@ -29,7 +30,7 @@ class neuron:
     def aplicate(self, data):
         Xp = np.r_[1, data]
         v  = np.dot(Xp, self.weight.T)
-        return v
+        return self.phi(v)
         
     def __repr__(self):
         representation = '+' + '-'*14 + '+\n'
@@ -38,64 +39,80 @@ class neuron:
         representation += '+' + '-'*14 + '+\n'
         return representation
 
-
 def training_function(qtde:int, activation_function:any, data:np.array,
-                      results:np.array, number_of_seasons = 70_000):
+                      results:np.array,eta = lambda ssns: 0.1,
+                      season_to_print = 1000, number_of_seasons = 100_000):
     
     rows, cols  = data.shape
-    n = [neuron(cols+1) for i in range(qtde)]
+    n           = [neuron(cols+1, activation_function) for i in range(qtde)]
+    acum_error  = np.zeros(len(n))
+    acum_e_all  = np.zeros(len(n))
     
     for ssns in range(number_of_seasons):
-        print(f'--------------iteração: {ssns}------------------')
+        acum_error *= 0
         for row in range(rows):
+            phi_v       = np.array([n[i].aplicate(data[row]) for i in range(qtde)])
+            error       = results[row] - phi_v
+            acum_error += abs(error)
+            acum_e_all += acum_error
+            for i in range(qtde):
+                Xp  = np.r_[1, data[row]]
+                wn1 = n[i].weight + error[i] * Xp * eta(ssns)
+                n[i].weight_atribute( wn1 )
+
+        if (ssns%season_to_print == 0):
+            space_string = ' '*len(f'{season_to_print}')
+            print(f'\n________________________ Season: {ssns} ________________________')
+            print(f'acumalate error in last {space_string} season: {acum_error}')
+            print(f'acumalate error in last {season_to_print} season: {acum_e_all}')
+            acum_e_all *= 0
             
-            v       = np.array([n[i].aplicate(data[row]) for i in range(qtde)])
-            error   = results[row] - activation_function(v)
-            [n[i].weight_atribute( n[i].weight + error[i]*np.r_[1, data[row]]*0.1 ) for i in range(qtde)]
-            print(f'error = {error}')
+        if sum(acum_error) == 0:
+            print(f'\n________________________ Season: {ssns} ________________________')
+            print(f'acumalate error in last season: {acum_error}')
+            print(f'acumalate error in all {season_to_print}  season: {acum_e_all}')
+            break
     return n
 
 #%%]
 def deg(x):
-    resp = np.zeros(x.shape)
-    for i in range(len(x)):
-        if  x[i]>0:
-            resp[i] = 1
-        else:
-            resp[i] = 0
-    return resp
+    if  x>0:
+        return 1
+    else:
+        return 0
   
 Input  = np.loadtxt('input.txt')
-Output = np.zeros([len(Input), 3])
+Output = np.zeros([len(Input), 2])
 with open('output.txt') as file:
     out_text = [i for i in file]
     for i,text in enumerate(out_text):
         text = text.replace('\n', '')
         if text == 'laranja':
-            Output[i,2] = 1 
+            Output[i,0] = 1 
         elif text == 'maca':
             Output[i,1] = 1
-        elif text == 'robson':
-            Output[i,0] = 1
-            
+
 for i in range(len(Output)):
-    if Output[i,2] == 1:
+    if Output[i,0] == 1:
         plt.plot(Input[i,0], Input[i,1], 'yx')
     elif Output[i,1] == 1:
         plt.plot(Input[i,0], Input[i,1], 'ro')
-    elif Output[i,0] == 1:
-        plt.plot(Input[i,0], Input[i,1], 'bo')
+
 plt.show()
     
     
 #%%
-   
+def f(ssns):
+    x0 = 5.13e-2
+    xf = 2.3026
+    x  = (xf-x0)/(100_000) * ssns + x0
+    return np.exp(-x)
+
+n = training_function(2, deg, Input, Output, eta=f, number_of_seasons=100_000) 
+
     
     
-    
-    
-    
-    
+  
     
     
     
