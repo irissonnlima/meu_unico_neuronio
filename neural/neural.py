@@ -92,9 +92,10 @@ def training_layer (neuron_layer:layer, data:np.array, results:np.array,
     acum_error  = np.zeros(neuron_layer.number_of_neurons)
     acum_e_all  = np.zeros(neuron_layer.number_of_neurons)
     
+    row_array   = np.arange(0, rows)
     for ssns in range(number_of_seasons):
         acum_error *= 0
-        for row in range(rows):
+        for row in row_array:
             phi_v       = neuron_layer.aplicate(data[row])
             error       = results[row] - phi_v
             acum_error += abs(error)
@@ -103,7 +104,8 @@ def training_layer (neuron_layer:layer, data:np.array, results:np.array,
                 Xp  = np.r_[1, data[row]]
                 wn1 = neuron_layer.neurons[i].weight + error[i] * Xp * eta(ssns)
                 neuron_layer.neurons[i].weight_atribute( wn1 )
-
+        
+        np.random.shuffle(row_array)
         if (ssns%season_to_print == 0):
             space_string = ' '*len(f'{season_to_print}')
             print(f'\n________________________ Season: {ssns} ________________________')
@@ -116,23 +118,3 @@ def training_layer (neuron_layer:layer, data:np.array, results:np.array,
             print(f'acumalate error in last season: {acum_error}')
             print(f'acumalate error in all {season_to_print}  season: {acum_e_all}')
             break
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
