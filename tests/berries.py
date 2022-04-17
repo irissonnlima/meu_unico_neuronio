@@ -18,7 +18,7 @@ def sigmoid(v):
 
 #%% import dados
   
-pasta  = '/home/widmark/Documentos/Code/machine_learning/meu_unico_neuronio/data/'
+pasta  = '/home/machina/Documentos/SEM_8/machine_learning/perceptron/data/'
 
 inp_berries  = np.loadtxt(pasta + 'input_berries.txt')
 out_berries = np.zeros([len(inp_berries), 3])
@@ -43,12 +43,12 @@ def f(ssns):
     x  = (xf-x0)/(100_000) * ssns + x0
     return np.exp(-x)
 
-# plt.plot(inp_berries[ 0: 7,0], inp_berries[ 0: 7,1], 'bo', label = 'mertilo')
-# plt.plot(inp_berries[ 7:16,0], inp_berries[ 7:16,1], 'ro', label = 'framboesa')
-# plt.plot(inp_berries[ 16: ,0], inp_berries[ 16: ,1], 'co', label = 'acai')
-# plt.legend()
-# plt.grid()
-# plt.show()  
+plt.plot(inp_berries[ 0: 7,0], inp_berries[ 0: 7,1], 'bo', label = 'mertilo')
+plt.plot(inp_berries[ 7:16,0], inp_berries[ 7:16,1], 'ro', label = 'framboesa')
+plt.plot(inp_berries[ 16: ,0], inp_berries[ 16: ,1], 'co', label = 'açaí')
+plt.legend()
+plt.grid()
+plt.show()  
 #%% treinamento
 SR = [[np.array([1,0,0]), 'Mertilo'     ],
       [np.array([0,1,0]), 'Framboesa'   ],
