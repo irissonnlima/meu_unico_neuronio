@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#%%
 import matplotlib.pyplot as plt
 import neural.neural as n
 import numpy as np
-
 
 #%% função de ativação
 def deg(x):
@@ -44,31 +44,35 @@ def f(ssns):
 SR = [[np.array([0,1]), 'Maçã'],
       [np.array([1,0]), 'Laranja']]
 
-neuron_layer = n.layer(2, 3, tanh, syntax_resp=SR)
-n.training_layer(neuron_layer, Input, Output, eta=lambda a: 10)
+neuron_layer = n.layer(2, 3, deg, syntax_resp=SR)
+error = n.training_layer(neuron_layer, Input, Output, eta = lambda a: 0.01)
 
 #%% Plotagem das retas
-w0_m = neuron_layer.neurons[0].weight[0]
-w1_m = neuron_layer.neurons[0].weight[1]
-w2_m = neuron_layer.neurons[0].weight[2]
+# w0_m = neuron_layer.neurons[0].weight[0]
+# w1_m = neuron_layer.neurons[0].weight[1]
+# w2_m = neuron_layer.neurons[0].weight[2]
 
-Ph_maca = lambda P:(w1_m*P + w0_m)/-w2_m
+# Ph_maca = lambda P:(w1_m*P + w0_m)/-w2_m
 
-w0_l = neuron_layer.neurons[1].weight[0]
-w1_l = neuron_layer.neurons[1].weight[1]
-w2_l = neuron_layer.neurons[1].weight[2]
+# w0_l = neuron_layer.neurons[1].weight[0]
+# w1_l = neuron_layer.neurons[1].weight[1]
+# w2_l = neuron_layer.neurons[1].weight[2]
 
-Ph_laranja = lambda P:(w1_l*P + w0_l)/-w2_l
+# Ph_laranja = lambda P:(w1_l*P + w0_l)/-w2_l
 
-for i,YX in enumerate(Input):
-    if all(Output[i] == [0,1]):
-        plt.plot(YX[0], YX[1], 'ro')
-    else:
-        plt.plot(YX[0], YX[1], 'yx')
+# for i,YX in enumerate(Input):
+#     if all(Output[i] == [0,1]):
+#         plt.plot(YX[0], YX[1], 'ro')
+#     else:
+#         plt.plot(YX[0], YX[1], 'yx')
         
-X = np.linspace(95,125,5)
-plt.plot(X,Ph_maca(X),'r') 
-plt.plot(X,Ph_laranja(X),'y') 
+# X = np.linspace(95,125,5)
+# plt.plot(X,Ph_maca(X),'r') 
+# plt.plot(X,Ph_laranja(X),'y') 
+# plt.show()
+
+#%% plot error
+ite = np.arange(0, len(error))
+plt.plot(ite,error[:, 0],'r')
 plt.show()
-    
-    
+  

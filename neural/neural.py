@@ -86,35 +86,36 @@ class layer:
 
 
 def training_layer (neuron_layer:layer, data:np.array, results:np.array,
-                    eta = lambda ssns: 0.1, season_to_print = 1000, number_of_seasons = 100_000):
+                    eta = lambda ssns: 0.1, season_to_print:int=1000, 
+                    shuffle:bool=True, number_of_seasons:int=100_000, tol:float=1e-5):
     
     rows, cols  = data.shape
     acum_error  = np.zeros(neuron_layer.number_of_neurons)
-    acum_e_all  = np.zeros(neuron_layer.number_of_neurons)
-    
+    rms_vector  = []
+
     row_array   = np.arange(0, rows)
     for ssns in range(number_of_seasons):
         acum_error *= 0
         for row in row_array:
             phi_v       = neuron_layer.aplicate(data[row])
             error       = results[row] - phi_v
-            acum_error += abs(error)
-            acum_e_all += acum_error
+            acum_error += 0.5*(error)**2         # RMS ou erro padrão para realizar a correção dos pesos?
+
             for i in range(neuron_layer.number_of_neurons):
                 Xp  = np.r_[1, data[row]]
                 wn1 = neuron_layer.neurons[i].weight + error[i] * Xp * eta(ssns)
                 neuron_layer.neurons[i].weight_atribute( wn1 )
         
-        np.random.shuffle(row_array)
+        acum_error /= rows 
+        rms_vector.append([erro for erro in acum_error])
+        if shuffle:
+            np.random.shuffle(row_array)
         if (ssns%season_to_print == 0):
-            space_string = ' '*len(f'{season_to_print}')
             print(f'\n________________________ Season: {ssns} ________________________')
-            print(f'acumalate error in last {space_string} season: {acum_error}')
-            print(f'acumalate error in last {season_to_print} season: {acum_e_all}')
-            acum_e_all *= 0
+            print(f'RMS in last season: {acum_error}')
             
-        if sum(acum_error) == 0:
+        if all(acum_error<=tol):
             print(f'\n________________________ Season: {ssns} ________________________')
-            print(f'acumalate error in last season: {acum_error}')
-            print(f'acumalate error in all {season_to_print}  season: {acum_e_all}')
+            print(f'RMS in last season: {acum_error}')
             break
+    return np.array(rms_vector) 
