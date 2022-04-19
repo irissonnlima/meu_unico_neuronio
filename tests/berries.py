@@ -50,9 +50,9 @@ plt.legend()
 plt.grid()
 plt.show()  
 #%% treinamento
-SR = [[np.array([1,0,0]), 'Mertilo'     ],
-      [np.array([0,1,0]), 'Framboesa'   ],
-      [np.array([0,0,1]), 'Açaí'        ]   ]
+SR = [[np.array([1,0,0]), 'Mertilo'  ],
+      [np.array([0,1,0]), 'Framboesa'],
+      [np.array([0,0,1]), 'Açaí'     ]]
 
 neuron_layer = n.layer(number_of_neurons=3, number_of_elements=3, activation_function=deg, syntax_resp=SR)
 error        = n.training_layer(neuron_layer, inp_berries, out_berries, eta = lambda a: 0.1)
