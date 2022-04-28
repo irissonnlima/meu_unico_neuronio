@@ -43,12 +43,13 @@ def sigmoid(v):
 #%% treinamento
 SR              = [[np.array([1,0]), 'Rock'],
                    [np.array([0,1]), 'Mine']]
-neuron_layer    = n.layer(2, 61, deg, SR)
+neuron_layer    = n.layer(2, 61, sigmoid, SR)
 neuron_layer.weight_randomize()
 error           = v.training_layer(neuron_layer, attributes_2_3, results_2_3, eta = lambda a: 0.01)
 
 #%% Plotagem
 plt.plot(range(len(error)), error)
+plt.grid()
 plt.show()
 
 #%% Avaliação
