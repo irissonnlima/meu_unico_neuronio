@@ -1,28 +1,14 @@
 #%%
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import resample
+#from sklearn.preprocessing import StandardScaler
+#from sklearn.utils import resample
 
 import matplotlib.pyplot as plt
 import neural.validation as v
 import neural.neural as n
 import numpy as np
 
-#%% função de ativação
-def deg(x):
-    if  x>0:
-        return 1
-    else:
-        return 0
-
-def tanh(v):
-    return np.tanh(v/2)
-
-def sigmoid(v):
-    return 1/(1 + np.exp(-v))
-
 #%% import dados
-
-pasta  = '/home/machina/Documentos/SEM_8/machine_learning/perceptron/data/'
+pasta  = 'data/'
 
 inp_berries  = np.loadtxt(pasta + 'input_berries.txt')
 out_berries = np.zeros([len(inp_berries), 3])
@@ -32,42 +18,41 @@ with open(pasta + 'output_berries.txt') as file:
         text = text.replace('\n', '')
         if text == 'mertilo':
             out_berries[i,0] = 1 
+            plt.plot(inp_berries[i,0],inp_berries[i,1], 'bo')
         elif text == 'framboesa':
             out_berries[i,1] = 1
+            plt.plot(inp_berries[i,0],inp_berries[i,1], 'ro')
         else:
-            out_berries[i,2] = 1
-
-# print(f'Input Berries = {inp_berries}') 
-# print(f'Output Berries = {out_berries}')  
-    
-#%% taxa de aprendizado
-def f(ssns):
-    x0 = 5.13e-2
-    xf = 2.3026
-    x  = (xf-x0)/(100_000) * ssns + x0
-    return np.exp(-x)
-
-plt.plot(inp_berries[ 0: 7,0], inp_berries[ 0: 7,1], 'bo', label = 'mertilo')
-plt.plot(inp_berries[ 7:16,0], inp_berries[ 7:16,1], 'ro', label = 'framboesa')
-plt.plot(inp_berries[ 16: ,0], inp_berries[ 16: ,1], 'co', label = 'açaí')
-plt.legend()
+            out_berries[i,2] = 1 
+            plt.plot(inp_berries[i,0],inp_berries[i,1], 'gx')
+plt.title('Classes')
+plt.xlabel('Parâmetro A')
+plt.ylabel('Parâmetro B')
 plt.grid()
-plt.show()  
+plt.show()
 #%% treinamento
 SR = [[np.array([1,0,0]), 'Mertilo'  ],
       [np.array([0,1,0]), 'Framboesa'],
       [np.array([0,0,1]), 'Açaí'     ]]
 
-neuron_layer = n.layer(number_of_neurons=3, number_of_elements=3, activation_function=deg, syntax_resp=SR)
-error        = v.training_layer(neuron_layer, inp_berries, out_berries, eta = lambda a: 0.1)
-print(neuron_layer.neurons)
+neuron_layer_deg    = n.layer(number_of_neurons=3, number_of_elements=3, activation_function=n.deg    , syntax_resp=SR)
+neuron_layer_sigm   = n.layer(number_of_neurons=3, number_of_elements=3, activation_function=n.sigmoid, syntax_resp=SR)
 
+error_deg           = v.training_layer(neuron_layer_deg,  inp_berries, out_berries, eta = lambda a: 0.1)
+error_sigm          = v.training_layer(neuron_layer_sigm, inp_berries, out_berries, eta = lambda a: 0.1)
 #%% plot error
-ite = np.arange(0, len(error))
-plt.plot(ite,error[:, 0],'r')
+plt.plot(error_deg,  label='função degral', alpha = 0.5)
+plt.plot(error_sigm, label='função sigmoidal',alpha = 0.5)
+plt.title('Evolução do erro durante o treinamento')
+plt.xlabel('iteração')
+plt.ylabel('erro RMS')
+plt.legend()
 plt.show()
 
-#%% Teste bootstrap
-resp = v.bootstrap_layer(inp_berries, out_berries, lambda: neuron_layer.weight_randomize(),
-                         lambda data, results: v.training_layer(neuron_layer, data, results),
-                         lambda data: neuron_layer.absolute_aplicate(data))
+#%% Plot base de dados
+for i,_ in enumerate(out_berries):
+    if out_berries[i,0]:
+        plt.plot(inp_berries[0],inp_berries[1], 'bo')
+    
+
+#%%

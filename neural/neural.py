@@ -3,13 +3,13 @@
 import numpy as np
 
 
-deg = lambda v: 1 if v>0 else 0
+deg         = lambda v: 1 if v>0 else 0
 
-tanh = lambda v: np.tanh(v/2)
+tanh        = lambda v: np.tanh(v/2)
 
-sigmoid = lambda v: 1/(1 + np.exp(-v))
+sigmoid     = lambda v: 1/(1 + np.exp(-v))
 
-d_sigmoid = lambda v: sigmoid(v) * (1 - sigmoid(v))
+d_sigmoid   = lambda v: sigmoid(v) * (1 - sigmoid(v))
 
 def __signal__(x):
     if x >= 0:
@@ -162,4 +162,75 @@ class mlp:
         return np.array(output)
       
     
+class mlp_optmizer:
+    def __init__(self, input_length = 2, hidden_length = 2, output_length = 1,
+                 activation_function = sigmoid,  d_activation_function:any = d_sigmoid):
+        self.input_length           = input_length
+        self.output_length          = output_length
+        self.hidden_length          = hidden_length
+        self.activation_function    = activation_function 
+        self.d_activation_function  = d_activation_function
+        
+        self.hidden_layer   = np.zeros([hidden_length, input_length +1]) 
+        self.output_layer   = np.zeros([output_length, hidden_length+1])
+        
+    def weight_randomize (self, maximum = 0.5, minimum = -0.5):
+        k = (maximum-minimum)*maximum
+        self.hidden_layer = k * np.random.rand(self.hidden_length, self.input_length +1)
+        self.output_layer = k * np.random.rand(self.output_length, self.hidden_length+1)
+        
+    def aplicate(self, data):
+        yi = np.r_[1, data].reshape(1,len(np.r_[1, data]))
+        
+        # hidden layer
+        vi      = np.sum(self.hidden_layer * yi, axis=1).reshape(1, self.hidden_layer.shape[0])
+        phi_i   = self.activation_function(vi)
+        
+        # output layer
+        vo      = np.sum(self.output_layer * np.r_[1, phi_i[0]], axis=1).reshape(1, self.output_layer.shape[0])
+        phi_o   = self.activation_function(vo)
+        
+        return vi, phi_i, vo, phi_o
     
+def validate_mlp(multilayer_perceptron, data, results, eta = 0.1,
+                 number_of_seasons:int=500_000, tol=1e-3):
+    
+    rows, cols = np.shape(data)
+    sqrtError  = 0
+    for ssns in range(number_of_seasons):
+        
+        for i in range(rows):
+            vi, phi_i, vo, phi_o = multilayer_perceptron.aplicate(data[i])
+            
+            error       = results[i] - phi_o
+            sqrtError   += np.sum(error**2)
+            
+            # Treinamento Caso 1
+            delta_o = error * multilayer_perceptron.d_activation_function(phi_o)
+            
+            # Treinamento Caso 2
+            w_o_kj  = multilayer_perceptron.output_layer[:,1:]
+            delta_h = multilayer_perceptron.d_activation_function(phi_i) * np.dot(delta_o.T, w_o_kj)
+            
+            # Treinamento
+            multilayer_perceptron.output_layer += eta*np.dot(delta_o, (np.r_[1, phi_i[0]]).reshape(1, len(np.r_[1, phi_i[0]])))
+            multilayer_perceptron.hidden_layer += eta*np.dot(delta_h.T, (np.r_[1,data[i]])  .reshape(1, len(np.r_[1,data[i]])))
+        sqrtError /= rows
+        print(f"{ssns} RMS = {sqrtError}\n")
+            
+'''
+a = mlp_optmizer(2,2,1)
+a.weight_randomize()
+
+Xor_i = np.array([[0, 0],
+                  [0, 1],
+                  [1, 0],
+                  [1, 1]])
+
+Xor_r = np.array([[0],
+                  [1],
+                  [1],
+                  [0]])
+
+validate_mlp(a, Xor_i, Xor_r)
+'''
